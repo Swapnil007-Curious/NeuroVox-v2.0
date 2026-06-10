@@ -1,5 +1,8 @@
 NeuroVox v2.0 — 4-Channel EMG Wearable Communication Device
 
+<img width="1448" height="1086" alt="c02cce2a-0298-43e6-b0d4-cab7b549ccb2" src="https://github.com/user-attachments/assets/051838f8-d644-4ccb-bc17-597a5c0a7cf0" />
+
+
 NeuroVox v2.0 is an open-source wearable assistive communication device that converts forearm muscle electrical signals into AI-generated speech and text, enabling individuals with speech impairments caused by ALS, stroke, vocal cord damage, or partial paralysis to communicate through a companion smartphone application. The device uses electromyography to detect voluntary muscle contractions from the forearm, classifies gesture patterns in real time on an ESP32-S3 microcontroller, and transmits classified intent over Bluetooth 5.2 to the NeuroVox mobile app, where Claude Opus 4.6 converts raw gesture data into complete, contextually appropriate conversational responses displayed on screen and spoken aloud through the phone speaker.
 This repository contains all hardware design files for the NeuroVox v2.0 wearable — PCB schematics, Gerber files, mechanical enclosure CAD models, firmware source code, and assembly documentation.
 

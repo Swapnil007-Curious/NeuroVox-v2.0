@@ -1,0 +1,182 @@
+{
+    "version": 1,
+    "author": "NeuroVox v2.0",
+    "editor": "wokwi",
+    "settings": {
+        "hardware": "esp32-s3",
+        "cpuFrequency": 80,
+        "optimizeSpeed": true
+    },
+    "parts": [
+        {
+            "type": "board-esp32-s3-devkitc-1",
+            "id": "esp",
+            "top": 0,
+            "left": 0
+        },
+        {
+            "type": "wokwi-potentiometer",
+            "id": "pot1",
+            "top": -100,
+            "left": -160
+        },
+        {
+            "type": "wokwi-potentiometer",
+            "id": "pot2",
+            "top": -100,
+            "left": -80
+        },
+        {
+            "type": "wokwi-potentiometer",
+            "id": "pot3",
+            "top": -100,
+            "left": 0
+        },
+        {
+            "type": "wokwi-potentiometer",
+            "id": "pot4",
+            "top": -100,
+            "left": 80
+        },
+        {
+            "type": "wokwi-mpu6050",
+            "id": "imu1",
+            "top": 100,
+            "left": -160
+        },
+        {
+            "type": "wokwi-led",
+            "id": "led1",
+            "top": 100,
+            "left": 60,
+            "attrs": {
+                "color": "green"
+            }
+        },
+        {
+            "type": "wokwi-resistor",
+            "id": "r1",
+            "top": 100,
+            "left": 100,
+            "attrs": {
+                "value": "220"
+            }
+        }
+    ],
+    "connections": [
+        [
+            "pot1:SIG",
+            "esp:1",
+            "orange",
+            []
+        ],
+        [
+            "pot2:SIG",
+            "esp:2",
+            "orange",
+            []
+        ],
+        [
+            "pot3:SIG",
+            "esp:3",
+            "orange",
+            []
+        ],
+        [
+            "pot4:SIG",
+            "esp:4",
+            "orange",
+            []
+        ],
+        [
+            "pot1:VCC",
+            "esp:3V3",
+            "red",
+            []
+        ],
+        [
+            "pot1:GND",
+            "esp:GND",
+            "black",
+            []
+        ],
+        [
+            "pot2:VCC",
+            "esp:3V3",
+            "red",
+            []
+        ],
+        [
+            "pot2:GND",
+            "esp:GND",
+            "black",
+            []
+        ],
+        [
+            "pot3:VCC",
+            "esp:3V3",
+            "red",
+            []
+        ],
+        [
+            "pot3:GND",
+            "esp:GND",
+            "black",
+            []
+        ],
+        [
+            "pot4:VCC",
+            "esp:3V3",
+            "red",
+            []
+        ],
+        [
+            "pot4:GND",
+            "esp:GND",
+            "black",
+            []
+        ],
+        [
+            "imu1:VCC",
+            "esp:3V3",
+            "red",
+            []
+        ],
+        [
+            "imu1:GND",
+            "esp:GND",
+            "black",
+            []
+        ],
+        [
+            "imu1:SDA",
+            "esp:8",
+            "blue",
+            []
+        ],
+        [
+            "imu1:SCL",
+            "esp:9",
+            "yellow",
+            []
+        ],
+        [
+            "esp:15",
+            "r1:1",
+            "green",
+            []
+        ],
+        [
+            "r1:2",
+            "led1:A",
+            "green",
+            []
+        ],
+        [
+            "led1:C",
+            "esp:GND",
+            "black",
+            []
+        ]
+    ]
+}

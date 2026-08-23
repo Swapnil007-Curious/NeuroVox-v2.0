@@ -1,31 +1,60 @@
-NeuroVox v2.0 — 4-Channel EMG Wearable Communication Device
+# NeuroVox v2.0
 
-<img width="1536" height="1024" alt="2c0d2682-f21a-4cef-98a9-e04b24fe455d" src="https://github.com/user-attachments/assets/58a4c060-d40f-49d6-9831-0cdf9d3d62cf" />
+A forearm-worn EMG device that turns muscle twitches into speech. Built for people who've lost the ability to talk but haven't lost the ability to move a muscle somewhere — most commonly the forearm, even after a stroke or with advanced ALS.
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/d2b3fa7e-3171-4c20-a8b0-e32521bf3689" />
 
 
+## Why this exists
 
-NeuroVox v2.0 is an open-source wearable assistive communication device that converts forearm muscle electrical signals into AI-generated speech and text, enabling individuals with speech impairments caused by ALS, stroke, vocal cord damage, or partial paralysis to communicate through a companion smartphone application. The device uses electromyography to detect voluntary muscle contractions from the forearm, classifies gesture patterns in real time on an ESP32-S3 microcontroller, and transmits classified intent over Bluetooth 5.2 to the NeuroVox mobile app, where Claude Opus 4.6 converts raw gesture data into complete, contextually appropriate conversational responses displayed on screen and spoken aloud through the phone speaker.
-This repository contains all hardware design files for the NeuroVox v2.0 wearable — PCB schematics, Gerber files, mechanical enclosure CAD models, firmware source code, and assembly documentation.
+Stephen Hawking ran his entire speech synthesizer off a twitch in his cheek. That's the whole premise here, just moved to the forearm and built with parts that cost less than a used textbook.
 
-The Problem This Solves
+Commercial AAC (augmentative and alternative communication) hardware — eye trackers, switch boards, dedicated speech devices — runs anywhere from ₹1.5 lakh to ₹5 lakh and usually needs a clinician to configure it. That price tag puts it out of reach for most families in India, and honestly most places. NeuroVox is an attempt to get 80% of the functionality for under ₹4,000 in parts, using an approach any electronics student with a soldering iron (or, in my case, a JLCPCB assembly order because I once destroyed an Arduino trying to hand-solder it) can replicate.
 
-Approximately 1.4 billion people worldwide live with some form of disability affecting communication. Conditions like ALS, locked-in syndrome, brainstem stroke, and severe vocal cord damage leave patients cognitively intact but physically unable to produce speech. Existing augmentative and alternative communication devices — eye-tracking systems, switch-based boards, dedicated speech generating devices — cost between ₹1,50,000 and ₹5,00,000 and require professional configuration. Most patients in India and across developing regions never access them. NeuroVox v2.0 is a functional, open-source alternative built for under ₹4,000 in components that any electronics student or maker can assemble, modify, and deploy.
-The core insight is biological: most people who cannot speak still retain voluntary muscle control somewhere in their body, most commonly in the forearm. EMG-based gesture detection exploits this residual control. Stephen Hawking communicated by twitching his cheek muscle. NeuroVox gives that same capability to anyone, using hardware that costs less than a textbook.
+## How it actually works
 
-How It Works
+Four EMG channels read muscle activity from two sites on the forearm — the flexor digitorum superficialis on the inner arm and the extensor digitorum on the outer arm, two channels each. The electrodes themselves aren't part of the enclosure. I used standard 2"x2" medical-grade TENS pads, stuck directly to the skin, with leads running into the device through small cable clips on the side of the housing. Simpler to build, easier to source, and honestly more comfortable than trying to mold electrodes into a plastic shell.
 
-The device operates on a three-stage signal pipeline. In the first stage, four dry Ag/AgCl electrode contacts integrated directly into the PCB edge press against the forearm skin through the device's silicone TPU underside. Two contacts target the flexor digitorum superficialis on the inner forearm and two contacts target the extensor digitorum on the outer forearm, providing independent activation signals from antagonistic muscle groups simultaneously.
-In the second stage, four AD8232 EMG front-end ICs amplify the raw microvolt-level electrode signals through instrumentation amplifier circuits, apply bandpass filtering between 0.5Hz and 40Hz to isolate the EMG frequency band and reject 50Hz mains interference and motion baseline drift, and output clean 0–3.3V analog voltages to the ADS1299 8-channel biosignal ADC. The ADS1299 samples all four channels at 250Hz with 24-bit resolution, providing significantly higher signal fidelity than the 12-bit ADC used in v1.0. An INA333 instrumentation amplifier handles supplementary differential signal conditioning on channels three and four. A BNO055 IMU monitors arm orientation and motion continuously, feeding accelerometer and gyroscope data into the firmware's motion artifact rejection algorithm — when the arm moves suddenly, the firmware flags the sample window as corrupted and discards it rather than misclassifying a motion artifact as an intentional gesture.
-In the third stage, the ESP32-S3 module reads all four processed EMG channel values at 1000Hz via SPI from the ADS1299, runs a software envelope detector on each channel using exponential moving average filtering, and feeds the four-channel envelope signals into a state machine gesture classifier. With four independent channels capturing flexor and extensor activity on both sides of the forearm simultaneously, the combinatorial gesture space allows reliable discrimination of twelve or more distinct gesture patterns including single pulse, double pulse, triple pulse, sustained hold, and simultaneous multi-channel activations. Once a gesture is classified, the ESP32-S3 transmits the corresponding gesture label string over Bluetooth 5.2 Low Energy using a GATT notify characteristic to the companion app. Simultaneously, GPIO27 triggers a brief haptic feedback pulse through the vibration motor confirming to the user that their gesture was successfully detected and transmitted.
+Each channel goes through an AD8232 front end for amplification and bandpass filtering, then into an ADS1299 24-bit ADC that samples all four channels together. An INA333 handles extra differential conditioning on two of the channels. A BNO055 IMU sits on the board too — its whole job is catching sudden arm movement and telling the firmware "ignore this sample, that's motion, not a gesture," which cuts down on false triggers a lot more than I expected going in.
 
-Hardware Architecture
+The ESP32-S3 runs the actual classification: an envelope detector smooths the raw signal, an adaptive threshold per channel adjusts itself against a rolling average so the system doesn't drift out of calibration as it gets used, and a state machine counts pulses to map them onto phrases (one pulse = yes, two = no, three = help, and so on — twelve-plus combinations are possible once you start combining channels). Once a gesture clears a silence window, it goes out over BLE to a phone.
 
-The custom PCB is a 2-layer 200×50mm FR4 board designed in EasyEDA, manufactured at PCBPower.in. The narrow strip form factor is intentional — it allows the board to sit along the longitudinal axis of the forearm rather than across it, keeping the device profile low and the electrode spacing anatomically correct for targeting different forearm muscle groups.
-The board is divided into three electrically isolated copper pour zones with a single ferrite bead bridge between analog and digital grounds. The analog zone occupies the left two-thirds of the board and houses all four AD8232 ICs, the ADS1299, the INA333, electrode connector edge fingers, and all EMG signal routing with copper guard rings surrounding every sensitive trace. The digital zone occupies the right third and houses the ESP32-S3 module mounted with its antenna overhanging the short right board edge with no copper pour within 3mm, the BNO055 IMU, haptic motor driver, and RGB LED array. The power zone runs along the bottom edge of the board and contains the MCP73831 LiPo charger, TPS61023 boost converter, power inductor, bulk capacitors, and the USB-C charging port.
-The 3000mAh Li-ion battery mounts in a holder directly below the PCB, separated by 3mm standoffs, and is enclosed within the same ABS housing. At an estimated average current draw of 200–250mA with all four EMG channels active, BLE transmitting, and the haptic motor firing periodically, the system provides approximately 10–15 hours of continuous operation per charge.
-The enclosure is a two-part design: a rigid 150×50×14mm ABS top shell manufactured by 3D printing in PLA for prototyping, and a matte black medical silicone TPU underside layer that conforms to the forearm surface and holds the four dry electrode contacts at anatomically spaced positions. The two halves are secured with four M2 screws. A 25mm wide nylon and Velcro strap system with aluminium centre-bar buckles wraps around the forearm and maintains consistent electrode contact pressure without restricting blood flow.
+## The board
 
-Firmware
+Two-layer, 220mm x 50mm, split into three zones along its length — power, analog front end, digital/radio. The narrow strip shape isn't an aesthetic choice, it's so the board sits along the forearm instead of across it.
 
-The ESP32-S3 firmware is written in C++ using the Arduino framework with the ESP-IDF component layer. Core tasks run on FreeRTOS with three independent threads: an ADC sampling thread running at 1000Hz on Core 0, a signal processing and gesture classification thread on Core 1, and a BLE communication thread managing the GATT server and connection events on Core 1 at lower priority. This threading architecture prevents BLE stack latency from corrupting the ADC sampling timing.
-The gesture classification algorithm is a threshold-based state machine in v2.0. Each of the four channels produces an envelope value updated at 1000Hz. The state machine monitors activation onset (envelope crossing above threshold), duration of sustained activation, inter-pulse gap timing, and simultaneous multi-channel activation flags. A gesture is confirmed only after a 400ms silence window following the last detected pulse, preventing partial gesture fragments from triggering false outputs. Threshold values are stored in ESP32 NVS flash and updated during the in-app calibration routine, allowing the device to adapt to individual users whose EMG signal amplitudes vary significantly based on muscle mass, electrode contact quality, and skin impedance.
+| | |
+|---|---|
+| MCU | ESP32-S3-WROOM-1 |
+| ADC | ADS1299, 24-bit, 4 channels used |
+| Analog front end | 4x AD8232 + 1x INA333 |
+| IMU | BNO055 |
+| Charging | MCP73831, USB-C input |
+| Power | TPS61023 boost converter, AMS1117 3.3V regulator |
+| Battery | 5000mAh LiPo pouch cell |
+| Radio | BLE 5.x via the ESP32-S3's own stack |
+| Extras | DRV2605L haptic driver, MAX98357A audio amp, RGB status LEDs, piezo buzzer |
+
+Analog and digital ground are kept as two separate pours on the board and only meet at one point, through a ferrite bead, right where the analog zone ends and the digital zone begins. This matters more than it sounds like it should — the first pass at this board was 200mm long and the analog section was cramped enough that routing a clean ground reference to the instrumentation amp was genuinely not possible in the space available, proven by exhaustive pathfinding search, not just a bad autorouter run. Stretching the board to 220mm and giving the analog zone 90mm instead of 65mm fixed it. If you're forking this and want to shrink the board back down, budget real time for that fight.
+
+## The shell
+
+Two pieces — a rigid top half and a slightly flexible underside that actually touches skin — that snap together with a small interference lip instead of screws. Four alignment pegs keep the halves lined up during assembly. Two strap wings on the long edges take a fabric or silicone band. There's a thinned section over the antenna so the ESP32-S3's onboard antenna isn't shooting through 3mm of solid plastic, ventilation slots over the parts that run warm, and cutouts for the USB-C port, a small speaker grille, the status LEDs, the buzzer, and a programming header for flashing firmware without opening the case every time.
+
+Files are exported as both STEP and STL, top and bottom as separate solids so you can reprint just one half if you mess up a dimension (ask me how I know this is worth doing).
+
+## Firmware
+
+C++ on the Arduino/ESP-IDF framework, split across four FreeRTOS tasks: ADC sampling on its own core so BLE traffic can't jitter the sample timing, gesture classification, BLE dispatch, and IMU monitoring for motion rejection.
+
+Right now the classification pipeline is fully built and validated against a bench setup using potentiometers standing in for the EMG front end and an MPU6050 standing in for the BNO055 — same signal shapes, same timing, easier to test without a person attached to alligator clips at 1am. The part that's left is swapping the potentiometer reads for a real SPI driver talking to the ADS1299 on the actual board. That's next, once the assembled PCB is back from fab.
+
+All four channels are treated equally in the classifier. An earlier board revision had a ground reference issue on two of the four channels and the firmware briefly compensated for it with per-channel weighting — that compensation got pulled once the board redesign actually fixed the underlying problem, because leaving asymmetric logic in for a hardware issue that no longer exists would just make things worse.
+
+## What's not done yet
+
+The phone app doesn't exist yet. The plan is for it to take the raw gesture label the board sends over BLE and hand it to an LLM (Claude, most likely, since that's what I've used for everything else building this) to turn "CH1:YES" into an actual sentence with context, rather than just flashing a static word on screen. That's the next phase.
+
+## Rough cost
+
+Bill of materials lands somewhere around ₹3,500–5,000 depending on order quantity from JLCPCB and whatever the LiPo pouch cell costs that week. That number is just parts and assembly — it doesn't include the PCB design iterations, the enclosure prototyping, or the software work that went into getting here, which is a separate and much larger number if you're trying to account for total development cost rather than unit replication cost. Worth keeping those two figures separate when you're citing either one.

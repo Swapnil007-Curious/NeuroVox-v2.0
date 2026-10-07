@@ -35,7 +35,8 @@ Muscle twitch to spoken sentence is meant to land in under two seconds, most of 
 
 ## The board
 
-![PCB 3D view](images/pcb-3d.png)
+<img width="1356" height="522" alt="Screenshot 2026-10-01 205916" src="https://github.com/user-attachments/assets/89955f0b-e9c7-414f-99a7-e68381638558" />
+
 
 2 layer FR4, **220mm x 50mm**, designed in KiCad 8. It's long and skinny on purpose so it runs along the forearm instead of across it.
 
@@ -102,7 +103,8 @@ Device name: `NeuroVox-v2`
 
 ## Enclosure
 
-![Exploded view](images/exploded-view.png)
+<img width="1440" height="1080" alt="ezgif-frame-200" src="https://github.com/user-attachments/assets/7102dd25-1f2d-448e-9672-f57635b4cc12" />
+
 
 Two part snap fit, no screws holding the halves together (four M2 screws just hold the PCB to standoffs inside the top shell).
 
@@ -119,8 +121,6 @@ Two part snap fit, no screws holding the halves together (four M2 screws just ho
 ---
 
 ## Bill of materials
-
-Full BOM with LCSC part numbers is in `NeuroVox_v2_0_FULL_BOM.csv`. It's split into the PCBA parts (the only section you upload to JLCPCB) and everything else you buy separately.
 
 Main parts:
 
@@ -163,18 +163,6 @@ The software subscription (₹20,000 a year) covers the AI sentence generation, 
 
 ---
 
-## Repo layout
-
-```
-/PCB        KiCad board file and Gerbers
-/CAD        TOP.stl, BOTTOM.stl, FULL.stl
-/FIRMWARE   main.cpp, diagram.json, wokwi.toml
-NeuroVox_v2_0_FULL_BOM.csv
-NeuroVox_v2_0_BOM_organized.csv
-```
-
----
-
 ## What's done and what isn't
 
 Done:
@@ -205,7 +193,3 @@ NeuroVox is a student research project. It isn't certified or clinically validat
 - CAD: https://github.com/Swapnil007-Curious/NeuroVox-v2.0/tree/main/CAD
 - PCB: https://github.com/Swapnil007-Curious/NeuroVox-v2.0/tree/main/PCB
 - Firmware: https://github.com/Swapnil007-Curious/NeuroVox-v2.0/tree/main/FIRMWARE
-
-## License
-
-See the LICENSE file. If you build one, I'd honestly love to hear how it went.

@@ -2,7 +2,8 @@
 
 A forearm band that reads tiny muscle signals and turns them into spoken sentences. It's for people who can't talk anymore (ALS, stroke, vocal cord damage, some spinal injuries) but can still twitch a muscle in their forearm, which turns out to be most of them for a long time.
 
-![NeuroVox on the forearm](images/device-on-arm.png)
+<img width="1920" height="819" alt="device-on-hand" src="https://github.com/user-attachments/assets/2faddf15-f50f-4aae-b18d-c0977e5ade9d" />
+
 
 **Hardware:** ₹10,000
 **Software (companion website + AI voice):** ₹20,000 per year
